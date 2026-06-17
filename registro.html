@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>RetornaCírculo · Registro de Envase</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&family=Orbitron:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:#060a0f;--surface:#0b1219;--s2:#0e1822;--bdr:#1a2d40;--bdr2:#244260;
+    --cyan:#00d4ff;--green:#39ff84;--amber:#ffb547;--eco:#5cd9a8;--pink:#ff3c6e;
+    --txt:#c8dde8;--bright:#e8f4fa;--muted:#4a6070;--muted2:#6a8090;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--txt);font-family:'Rajdhani',sans-serif;min-height:100vh;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);
+    background-size:44px 44px;}
+
+  /* TOPBAR */
+  .topbar{position:relative;z-index:10;display:flex;align-items:center;justify-content:space-between;
+    background:rgba(6,10,15,.97);border-bottom:1px solid var(--bdr2);padding:0 20px;height:44px;}
+  .topbar .brand{font-family:'Orbitron',sans-serif;font-size:.85rem;font-weight:900;}
+  .topbar .brand span{color:var(--eco);}
+  .topbar .brand em{color:var(--cyan);font-style:normal;}
+  .topbar .live{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--green);
+    display:flex;align-items:center;gap:4px;}
+  .topbar .live::before{content:'';width:6px;height:6px;border-radius:50%;
+    background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.5s step-end infinite;}
+  .topbar nav{display:flex;gap:16px;}
+  .topbar nav a{font-family:'Share Tech Mono',monospace;font-size:.62rem;color:var(--muted2);
+    text-decoration:none;padding:4px 8px;border:1px solid transparent;transition:.15s;}
+  .topbar nav a:hover,.topbar nav a.active{color:var(--cyan);border-color:var(--bdr2);}
+  @keyframes blink{50%{opacity:.2;}}
+
+  /* LAYOUT */
+  .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:24px 20px;}
+  .page-title{font-family:'Orbitron',sans-serif;font-size:1.1rem;color:var(--bright);margin-bottom:4px;}
+  .page-sub{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted2);margin-bottom:20px;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:700px){.grid2{grid-template-columns:1fr;}}
+
+  /* PANEL */
+  .panel{background:var(--surface);border:1px solid var(--bdr);}
+  .panel-hd{display:flex;align-items:center;justify-content:space-between;
+    padding:10px 14px;border-bottom:1px solid var(--bdr);
+    font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted2);letter-spacing:.08em;}
+  .panel-hd .dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);display:inline-block;margin-right:6px;}
+  .panel-body{padding:16px;}
+
+  /* FORM */
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-family:'Share Tech Mono',monospace;font-size:.58rem;
+    color:var(--muted2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+  .field input,.field select{width:100%;background:var(--s2);border:1px solid var(--bdr2);
+    color:var(--bright);font-family:'Share Tech Mono',monospace;font-size:.78rem;
+    padding:8px 12px;outline:none;transition:.15s;appearance:none;}
+  .field input:focus,.field select:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,212,255,.1);}
+  .field input::placeholder{color:var(--muted);}
+  .field select option{background:var(--s2);}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* BUTTONS */
+  .btn{padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:.72rem;
+    font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;cursor:pointer;
+    transition:all .2s;display:inline-flex;align-items:center;gap:6px;}
+  .btn-primary{background:var(--cyan);color:var(--bg);}
+  .btn-primary:hover{background:#00b8d9;transform:translateY(-1px);}
+  .btn-primary:disabled{background:var(--muted);cursor:not-allowed;transform:none;}
+  .btn-ghost{background:none;color:var(--cyan);border:1px solid var(--cyan);}
+  .btn-ghost:hover{background:rgba(0,212,255,.08);}
+  .btn-danger{background:none;color:var(--pink);border:1px solid var(--pink);}
+  .btn-danger:hover{background:rgba(255,60,110,.08);}
+
+  /* QR RESULT */
+  .qr-result{display:none;margin-top:16px;border:1px solid var(--eco);padding:16px;background:rgba(92,217,168,.04);}
+  .qr-result.show{display:block;}
+  .qr-result .qr-code-str{font-family:'Orbitron',monospace;font-size:.9rem;color:var(--eco);
+    letter-spacing:.06em;margin:8px 0;}
+  .qr-result img{display:block;margin:10px 0;border:2px solid var(--eco);padding:8px;background:white;}
+  .qr-meta{font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted2);line-height:1.8;}
+  .qr-meta span{color:var(--txt);}
+
+  /* SCAN AREA */
+  .scan-box{border:2px dashed var(--bdr2);padding:20px;text-align:center;position:relative;
+    background:var(--s2);cursor:pointer;transition:.2s;}
+  .scan-box:hover{border-color:var(--cyan);background:rgba(0,212,255,.03);}
+  .scan-box .scan-icon{font-size:2rem;margin-bottom:8px;}
+  .scan-box p{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted2);}
+
+  #qr-input-manual{margin-top:12px;}
+
+  /* EVENT RESULT */
+  .ev-result{display:none;margin-top:14px;padding:14px;border:1px solid var(--bdr2);}
+  .ev-result.show{display:block;}
+  .ev-result.ok{border-color:var(--green);background:rgba(57,255,132,.04);}
+  .ev-result.warn{border-color:var(--amber);background:rgba(255,181,71,.04);}
+  .ev-result.err{border-color:var(--pink);background:rgba(255,60,110,.04);}
+  .ev-result .ev-title{font-family:'Orbitron',sans-serif;font-size:.8rem;margin-bottom:8px;}
+  .ev-result.ok .ev-title{color:var(--green);}
+  .ev-result.warn .ev-title{color:var(--amber);}
+  .ev-result.err .ev-title{color:var(--pink);}
+
+  /* HISTORIAL */
+  .trace{padding-left:18px;position:relative;margin-top:10px;}
+  .trace::before{content:'';position:absolute;left:6px;top:4px;bottom:4px;
+    width:1px;background:var(--bdr2);}
+  .trace-step{position:relative;padding:2px 0 8px 14px;
+    font-size:.72rem;color:var(--muted2);}
+  .trace-step::before{content:'';position:absolute;left:-12px;top:6px;
+    width:8px;height:8px;background:var(--bg);border:1.5px solid var(--bdr2);border-radius:50%;}
+  .trace-step.ok::before{border-color:var(--green);background:rgba(57,255,132,.2);}
+  .trace-step.warn::before{border-color:var(--amber);}
+  .trace-step.err::before{border-color:var(--pink);}
+  .trace-step .ts{font-family:'Share Tech Mono',monospace;font-size:.56rem;color:var(--muted);display:block;}
+  .trace-step .ev-type{font-family:'Share Tech Mono',monospace;font-size:.65rem;}
+  .trace-step.ok .ev-type{color:var(--green);}
+  .trace-step.warn .ev-type{color:var(--amber);}
+  .trace-step.err .ev-type{color:var(--pink);}
+
+  /* STATUS BAR */
+  .status-bar{font-family:'Share Tech Mono',monospace;font-size:.62rem;
+    padding:6px 14px;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .status-bar.info{background:rgba(0,212,255,.06);border-left:3px solid var(--cyan);color:var(--cyan);}
+  .status-bar.success{background:rgba(57,255,132,.06);border-left:3px solid var(--green);color:var(--green);}
+  .status-bar.error{background:rgba(255,60,110,.06);border-left:3px solid var(--pink);color:var(--pink);}
+  .status-bar{display:none;}
+  .status-bar.show{display:flex;}
+
+  /* EMPRESA SELECT */
+  .empresa-badge{font-family:'Share Tech Mono',monospace;font-size:.6rem;
+    padding:2px 8px;border:1px solid var(--eco);color:var(--eco);display:inline-block;margin-top:4px;}
+
+  /* LOADER */
+  .spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,0,0,.3);
+    border-top-color:currentColor;border-radius:50%;animation:spin .6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* LISTA ENVASES */
+  .env-list{margin-top:16px;}
+  .env-item{border:1px solid var(--bdr);padding:10px 12px;margin-bottom:6px;
+    display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;
+    transition:.15s;cursor:pointer;}
+  .env-item:hover{border-color:var(--cyan);background:rgba(0,212,255,.02);}
+  .env-item .ei-qr{font-family:'Orbitron',monospace;font-size:.65rem;color:var(--cyan);}
+  .env-item .ei-meta{font-family:'Share Tech Mono',monospace;font-size:.58rem;color:var(--muted2);}
+  .env-item .ei-estado{font-family:'Share Tech Mono',monospace;font-size:.58rem;padding:2px 8px;border:1px solid;}
+  .estado-EN_CAMPO{color:var(--amber);border-color:var(--amber)!important;}
+  .estado-RETORNADO{color:var(--green);border-color:var(--green)!important;}
+  .estado-EN_TRANSITO{color:var(--cyan);border-color:var(--cyan)!important;}
+  .estado-VALORIZADO{color:var(--eco);border-color:var(--eco)!important;}
+  .estado-RECHAZADO{color:var(--pink);border-color:var(--pink)!important;}
+
+  .empty{font-family:'Share Tech Mono',monospace;font-size:.65rem;color:var(--muted);
+    text-align:center;padding:24px;}
+
+  /* ACTION BUTTONS */
+  .action-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand"><em>♻</em> RETORNA<span>CÍRCULO</span></div>
+  <nav>
+    <a href="registro.html" class="active">Registro</a>
+    <a href="scan.html">Escaneo QR</a>
+    <a href="dashboard.html">Dashboard</a>
+  </nav>
+  <div class="live">CONECTADO · SUPABASE</div>
+</div>
+
+<div class="wrap">
+  <div class="page-title">Registro de Envases + Escaneo QR</div>
+  <div class="page-sub">POST /api/envases · POST /api/eventos · Ley REP 20.920 · DS N°12/2020</div>
+
+  <div id="statusBar" class="status-bar"></div>
+
+  <div class="grid2">
+
+    <!-- ── PANEL IZQUIERDO: REGISTRO ── -->
+    <div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span><span class="dot"></span>MÓDULO A · ALTA DE NUEVO ENVASE</span>
+          <span>POST /api/envases</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="field">
+            <label>Empresa</label>
+            <select id="empresa_id">
+              <option value="">Cargando empresas...</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Material</label>
+              <select id="material">
+                <option value="">Seleccionar...</option>
+                <option value="PET">PET</option>
+                <option value="VIDRIO">Vidrio</option>
+                <option value="CARTON">Cartón</option>
+                <option value="METAL">Metal</option>
+                <option value="PLASTICO_RIGIDO">Plástico rígido</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Peso (kg)</label>
+              <input type="number" id="peso_kg" placeholder="1.200" step="0.001" min="0.001"/>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Capacidad (L)</label>
+              <input type="number" id="capacidad_l" placeholder="1.5" step="0.01"/>
+            </div>
+            <div class="field">
+              <label>Lote</label>
+              <input type="text" id="lote" placeholder="LOT-2026-Q2"/>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-primary" id="btnRegistrar" onclick="registrarEnvase()">
+              + REGISTRAR ENVASE
+            </button>
+            <button class="btn btn-ghost" onclick="limpiarFormulario()">LIMPIAR</button>
+          </div>
+
+          <!-- QR Resultado -->
+          <div class="qr-result" id="qrResult">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--eco);margin-bottom:6px;letter-spacing:.1em;">
+              ✓ ENVASE REGISTRADO EXITOSAMENTE
+            </div>
+            <div class="qr-code-str" id="qrCodeStr"></div>
+            <img id="qrImg" alt="Código QR" style="width:140px;height:140px;"/>
+            <div class="qr-meta" id="qrMeta"></div>
+            <div class="action-row" style="margin-top:10px;">
+              <button class="btn btn-ghost" onclick="imprimirQR()" style="font-size:.62rem;padding:6px 12px;">
+                ↓ IMPRIMIR ETIQUETA
+              </button>
+              <button class="btn btn-ghost" onclick="registrarRetornoDirecto()" style="font-size:.62rem;padding:6px 12px;color:var(--eco);border-color:var(--eco);">
+                ↻ SIMULAR RETORNO
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lista de envases recientes -->
+      <div class="panel" style="margin-top:14px;">
+        <div class="panel-hd">
+          <span><span class="dot"></span>ENVASES RECIENTES</span>
+          <button onclick="cargarEnvases()" style="background:none;border:none;color:var(--cyan);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:.58rem;">↻ ACTUALIZAR</button>
+        </div>
+        <div class="panel-body" style="padding:10px;">
+          <div id="envasesList"><div class="empty">Cargando...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL DERECHO: ESCANEO + RETORNO ── -->
+    <div>
+      <div class="panel">
+        <div class="panel-hd">
+          <span><span class="dot"></span>MÓDULO B · ESCANEO QR + RETORNO</span>
+          <span>POST /api/eventos</span>
+        </div>
+        <div class="panel-body">
+
+          <div class="scan-box" onclick="document.getElementById('qr-input-manual').focus()">
+            <div class="scan-icon">⬡</div>
+            <p>Ingresa el código QR manualmente<br/>o escanea con cámara</p>
+          </div>
+
+          <div class="field" id="qr-input-manual" style="margin-top:12px;">
+            <label>Código QR del envase</label>
+            <input type="text" id="qrCodeInput" placeholder="QR-ENV-CL-00000001-..." 
+              onkeydown="if(event.key==='Enter')buscarEnvase()"/>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Peso real (kg)</label>
+              <input type="number" id="pesoReal" placeholder="0.000" step="0.001"/>
+            </div>
+            <div class="field">
+              <label>Tipo de evento</label>
+              <select id="tipoEvento">
+                <option value="RETORNO_OK">RETORNO_OK</option>
+                <option value="RETORNO_CONTAMINADO">RETORNO_CONTAMINADO</option>
+                <option value="RECHAZADO_PESO">RECHAZADO_PESO</option>
+                <option value="ESCANEO_QR">ESCANEO_QR</option>
+                <option value="DESPACHO">DESPACHO</option>
+                <option value="VALORIZADO">VALORIZADO</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-primary" onclick="buscarEnvase()">
+              🔍 BUSCAR ENVASE
+            </button>
+            <button class="btn btn-ghost" onclick="registrarEvento()" id="btnEvento" style="display:none">
+              ✓ CONFIRMAR EVENTO
+            </button>
+          </div>
+
+          <!-- Resultado búsqueda -->
+          <div class="ev-result" id="evResult">
+            <div class="ev-title" id="evTitle"></div>
+            <div id="evBody"></div>
+          </div>
+
+          <!-- Historial trazabilidad -->
+          <div id="historialWrap" style="display:none;margin-top:16px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:.6rem;color:var(--muted2);
+              margin-bottom:8px;letter-spacing:.08em;border-bottom:1px solid var(--bdr);padding-bottom:4px;">
+              HISTORIAL DE TRAZABILIDAD
+            </div>
+            <div class="trace" id="historial"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = '';  // misma origin en Vercel
+const SUPABASE_URL = 'https://nmwhvndpckbryikoydme.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_cXtkWvDDf9U5jS5JEGJ3KA_b_Ah5x9b';
+
+let envaseActual = null;
+
+// ── UTILIDADES ────────────────────────────────────────────────────
+function showStatus(msg, type='info'){
+  const b=document.getElementById('statusBar');
+  b.textContent=msg; b.className=`status-bar show ${type}`;
+  if(type!=='error') setTimeout(()=>b.classList.remove('show'),4000);
+}
+
+function fmtFecha(iso){
+  if(!iso) return '—';
+  const d=new Date(iso);
+  return `${d.toLocaleDateString('es-CL')} ${d.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})}`;
+}
+
+const evClase={
+  REGISTRO:'ok',DESPACHO:'',RECEPCION:'',ESCANEO_QR:'',
+  RETORNO_OK:'ok',RETORNO_CONTAMINADO:'warn',RECHAZADO_PESO:'err',
+  EN_TRANSITO:'',VALORIZADO:'ok',REPORTADO_RETC:'ok'
+};
+
+// ── CARGAR EMPRESAS ───────────────────────────────────────────────
+async function cargarEmpresas(){
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/empresas?select=id,razon_social,rut&activa=eq.true&order=razon_social`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await r.json();
+    const sel = document.getElementById('empresa_id');
+    sel.innerHTML = '<option value="">Seleccionar empresa...</option>';
+    (data||[]).forEach(e => {
+      sel.innerHTML += `<option value="${e.id}">${e.razon_social} · ${e.rut}</option>`;
+    });
+    if(!data||data.length===0) {
+      sel.innerHTML = '<option value="">Sin empresas — ejecuta seed.sql</option>';
+    }
+  } catch(e){ console.error(e); }
+}
+
+// ── CARGAR ENVASES RECIENTES ──────────────────────────────────────
+async function cargarEnvases(){
+  const list = document.getElementById('envasesList');
+  list.innerHTML = '<div class="empty">Cargando...</div>';
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/envases?select=*,empresas(razon_social)&order=registrado_en.desc&limit=8`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    const data = await r.json();
+    if(!data||data.length===0){
+      list.innerHTML='<div class="empty">Sin envases aún. ¡Registra el primero!</div>'; return;
+    }
+    list.innerHTML = data.map(e=>`
+      <div class="env-item" onclick="llenarScan('${e.qr_code}')">
+        <div>
+          <div class="ei-qr">${e.qr_code}</div>
+          <div class="ei-meta">${e.material} · ${e.peso_kg}kg · ${e.empresas?.razon_social||'—'}</div>
+          <div class="ei-meta">${fmtFecha(e.registrado_en)}</div>
+        </div>
+        <div class="ei-estado estado-${e.estado}">${e.estado}</div>
+      </div>
+    `).join('');
+  } catch(e){
+    list.innerHTML='<div class="empty">Error cargando envases</div>';
+  }
+}
+
+function llenarScan(qr){
+  document.getElementById('qrCodeInput').value = qr;
+  document.querySelector('.panel-body').scrollIntoView({behavior:'smooth'});
+}
+
+// ── REGISTRAR ENVASE ──────────────────────────────────────────────
+async function registrarEnvase(){
+  const empresa_id = document.getElementById('empresa_id').value;
+  const material   = document.getElementById('material').value;
+  const peso_kg    = parseFloat(document.getElementById('peso_kg').value);
+  const capacidad_l= parseFloat(document.getElementById('capacidad_l').value)||null;
+  const lote       = document.getElementById('lote').value||null;
+
+  if(!empresa_id||!material||!peso_kg){
+    showStatus('⚠ Completa empresa, material y peso', 'error'); return;
+  }
+
+  const btn = document.getElementById('btnRegistrar');
+  btn.disabled=true;
+  btn.innerHTML='<span class="spin"></span> REGISTRANDO...';
+  showStatus('Registrando envase en Supabase...','info');
+
+  try {
+    const r = await fetch(`${API}/api/envases`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({empresa_id:parseInt(empresa_id), material, peso_kg, capacidad_l, lote})
+    });
+    const data = await r.json();
+
+    if(!r.ok) throw new Error(data.error||'Error desconocido');
+
+    // Mostrar QR
+    const qrResult = document.getElementById('qrResult');
+    document.getElementById('qrCodeStr').textContent = data.envase.qr_code;
+    if(data.qr_imagen) document.getElementById('qrImg').src = data.qr_imagen;
+    document.getElementById('qrMeta').innerHTML = `
+      <div>ID: <span>${data.envase.id}</span></div>
+      <div>Material: <span>${data.envase.material}</span></div>
+      <div>Peso: <span>${data.envase.peso_kg} kg</span></div>
+      <div>Lote: <span>${data.envase.lote||'—'}</span></div>
+      <div>Estado: <span style="color:var(--amber)">${data.envase.estado}</span></div>
+      <div>Registrado: <span>${fmtFecha(data.envase.registrado_en)}</span></div>
+    `;
+    qrResult.classList.add('show');
+    envaseActual = data.envase;
+
+    showStatus(`✓ ${data.mensaje}`, 'success');
+    cargarEnvases();
+
+  } catch(e){
+    showStatus(`✗ Error: ${e.message}`, 'error');
+  } finally {
+    btn.disabled=false;
+    btn.innerHTML='+ REGISTRAR ENVASE';
+  }
+}
+
+// ── BUSCAR ENVASE POR QR ──────────────────────────────────────────
+async function buscarEnvase(){
+  const qr = document.getElementById('qrCodeInput').value.trim();
+  if(!qr){ showStatus('⚠ Ingresa un código QR','error'); return; }
+
+  showStatus('Buscando en base de datos...','info');
+
+  try {
+    const r = await fetch(`${API}/api/eventos?qr_code=${encodeURIComponent(qr)}`);
+    const data = await r.json();
+
+    if(!r.ok) throw new Error(data.error||'QR no encontrado');
+
+    envaseActual = data.envase;
+    const ev = data.envase;
+
+    // Mostrar info envase
+    const evResult = document.getElementById('evResult');
+    evResult.className = 'ev-result show ok';
+    document.getElementById('evTitle').textContent = `✓ QR DETECTADO · ${ev.qr_code}`;
+    document.getElementById('evBody').innerHTML = `
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;line-height:2;">
+        <div>Material: <span style="color:var(--bright)">${ev.material}</span></div>
+        <div>Peso esperado: <span style="color:var(--bright)">${ev.peso_kg} kg</span></div>
+        <div>Estado actual: <span class="ei-estado estado-${ev.estado}" style="border:none;padding:0;">${ev.estado}</span></div>
+        <div>Empresa: <span style="color:var(--bright)">${ev.empresas?.razon_social||'—'}</span></div>
+      </div>
+    `;
+
+    // Mostrar historial
+    if(data.eventos && data.eventos.length > 0){
+      const wrap = document.getElementById('historialWrap');
+      wrap.style.display='block';
+      document.getElementById('historial').innerHTML = data.eventos.map(e=>`
+        <div class="trace-step ${evClase[e.tipo_evento]||''}">
+          <span class="ts">${fmtFecha(e.ocurrido_en)}</span>
+          <span class="ev-type">${e.tipo_evento}</span>
+          ${e.peso_real_kg ? `<span style="color:var(--muted2)"> · ${e.peso_real_kg}kg</span>` : ''}
+          ${e.operador ? `<span style="color:var(--muted)"> · ${e.operador}</span>` : ''}
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('btnEvento').style.display='inline-flex';
+    document.getElementById('pesoReal').value = ev.peso_kg;
+    showStatus(`✓ Envase encontrado: ${ev.qr_code}`, 'success');
+
+  } catch(e){
+    const evResult = document.getElementById('evResult');
+    evResult.className = 'ev-result show err';
+    document.getElementById('evTitle').textContent = `✗ ERROR · ${e.message}`;
+    document.getElementById('evBody').innerHTML='';
+    document.getElementById('btnEvento').style.display='none';
+    showStatus(`✗ ${e.message}`, 'error');
+  }
+}
+
+// ── REGISTRAR EVENTO ──────────────────────────────────────────────
+async function registrarEvento(){
+  const qr          = document.getElementById('qrCodeInput').value.trim();
+  const tipo_evento  = document.getElementById('tipoEvento').value;
+  const peso_real_kg = parseFloat(document.getElementById('pesoReal').value)||null;
+
+  if(!qr){ showStatus('⚠ Sin código QR','error'); return; }
+
+  showStatus('Registrando evento...','info');
+  const btn = document.getElementById('btnEvento');
+  btn.disabled=true; btn.innerHTML='<span class="spin"></span> REGISTRANDO...';
+
+  try {
+    const r = await fetch(`${API}/api/eventos`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ qr_code:qr, tipo_evento, peso_real_kg, operador:'DEMO-RC-001' })
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error||'Error');
+
+    const isOk = ['RETORNO_OK','VALORIZADO','REGISTRO'].includes(tipo_evento);
+    const isWarn = tipo_evento === 'RETORNO_CONTAMINADO';
+
+    const evResult = document.getElementById('evResult');
+    evResult.className = `ev-result show ${isOk?'ok':isWarn?'warn':'err'}`;
+    document.getElementById('evTitle').textContent =
+      `${isOk?'✓':isWarn?'⚠':'✗'} ${data.mensaje}`;
+    document.getElementById('evBody').innerHTML = `
+      <div style="font-family:'Share Tech Mono',monospace;font-size:.65rem;line-height:2;">
+        <div>Estado anterior: <span style="color:var(--muted2)">${data.estado_anterior}</span></div>
+        <div>Estado nuevo: <span style="color:var(--bright)">${data.estado_nuevo}</span></div>
+        ${data.alerta_peso ? `<div style="color:var(--amber)">⚠ ${data.alerta_peso}</div>` : ''}
+        <div>Evento ID: <span style="color:var(--cyan)">${data.evento?.id}</span></div>
+      </div>
+    `;
+
+    showStatus(`✓ Evento ${tipo_evento} registrado`, 'success');
+    buscarEnvase(); // Recargar historial
+    cargarEnvases();
+
+  } catch(e){
+    showStatus(`✗ ${e.message}`, 'error');
+  } finally {
+    btn.disabled=false; btn.innerHTML='✓ CONFIRMAR EVENTO';
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────
+function limpiarFormulario(){
+  ['empresa_id','material','peso_kg','capacidad_l','lote'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.value='';
+  });
+  document.getElementById('qrResult').classList.remove('show');
+  envaseActual=null;
+}
+
+function registrarRetornoDirecto(){
+  if(!envaseActual) return;
+  document.getElementById('qrCodeInput').value = envaseActual.qr_code;
+  document.getElementById('pesoReal').value = envaseActual.peso_kg;
+  document.getElementById('tipoEvento').value = 'RETORNO_OK';
+  buscarEnvase();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function imprimirQR(){
+  const qr = document.getElementById('qrImg').src;
+  const code = document.getElementById('qrCodeStr').textContent;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><title>Etiqueta QR · ${code}</title>
+  <style>body{font-family:monospace;text-align:center;padding:20px;}
+  img{width:200px;height:200px;border:2px solid #000;padding:8px;}
+  h2{font-size:1rem;margin:8px 0;} p{font-size:.7rem;color:#666;}
+  @media print{body{margin:0;padding:10px;}}</style></head>
+  <body><img src="${qr}"/><h2>${code}</h2>
+  <p>RetornaCírculo · Ley REP 20.920 · ${new Date().toLocaleDateString('es-CL')}</p>
+  <script>window.onload=()=>window.print()<\/script></body></html>`);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+cargarEmpresas();
+cargarEnvases();
+</script>
+</body>
+</html>
