@@ -1,0 +1,7 @@
+# gitleaks: reglas por defecto + allowlist justificado
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Clave publishable de Supabase (pensada para el navegador; la protección real es RLS)"
+regexes = ['''sb_publishable_[A-Za-z0-9_-]+''']
