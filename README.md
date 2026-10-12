@@ -1,5 +1,8 @@
 # ♻ RetornaCírculo
 
+[![CI](https://github.com/Fernandamv96/retornacirculo-saas/actions/workflows/ci.yml/badge.svg)](https://github.com/Fernandamv96/retornacirculo-saas/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-BD93F9)](LICENSE)
+
 > Plataforma SaaS B2B de trazabilidad digital para la gestión de retorno y valorización de envases industriales en Chile.
 
 **Ley REP 20.920 · DS N°12/2020 · Región de Valparaíso · CREA INACAP 2026**
@@ -23,6 +26,16 @@ Cada envase recibe un **código QR único** que lo identifica durante todo su ci
 | 🖨️ Wireframes imprimibles | [retornacirculo.vercel.app/wireframes.html](https://retornacirculo.vercel.app/wireframes.html) |
 
 ---
+
+![Hub de RetornaCírculo](docs/preview.png)
+
+## Estado actual del prototipo
+
+> **Prototipo académico.** Las características de abajo describen la **propuesta de producto**. Lo que hoy funciona en este repo:
+>
+> - Hub, dashboard (datos simulados) y wireframes navegables.
+> - `registro.html` **lee** empresas y envases desde Supabase con la clave pública (*publishable*).
+> - El **registro** de envases y eventos llama a `/api/envases` y `/api/eventos`, que **no están en este repo** (hoy responden 404). Certificados, exportación RETC, webhooks y modo offline están **diseñados** (`schema.sql`, `data-model.json`), no implementados.
 
 ## Características principales
 
@@ -107,3 +120,20 @@ Amaro Tapia · Daniela Muñoz · Julio Anabalón · Vicente Rodríguez · Diego 
 ---
 
 *RetornaCírculo · 2026 · Valparaíso, Chile*
+
+## 🔒 Calidad y seguridad
+
+- CI en cada push y PR: `html-validate`, además de CodeQL, Dependabot y gitleaks en pre-commit.
+- Para reportar vulnerabilidades, mira [SECURITY.md](SECURITY.md).
+
+> La clave de Supabase en `registro.html` es la *publishable key* (pensada para el navegador). La seguridad de los datos depende de tener **Row Level Security** activo en todas las tablas.
+
+## Qué aprendí
+
+- A modelar trazabilidad con *event sourcing* (eventos inmutables por envase).
+- A diseñar contratos de API antes de implementarlos.
+- Que una clave pública de Supabase es segura solo si las políticas RLS lo son.
+
+## 📄 Licencia
+
+[MIT](LICENSE) © 2026 Fernanda (Fernandamv96)
